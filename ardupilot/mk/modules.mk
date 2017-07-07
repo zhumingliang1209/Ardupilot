@@ -5,7 +5,7 @@
 all: CHECK_MODULES
 
 CHECK_MODULES:
-	$(v)$(MK_DIR)/check_modules.sh
+#	$(v)$(MK_DIR)/check_modules.sh
 
 module-update:
 	git submodule update
