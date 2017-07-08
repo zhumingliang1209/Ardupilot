@@ -250,6 +250,7 @@ private:
     float groundspeed_error;	
 
     // 0-(throttle_max - throttle_cruise) : throttle nudge in Auto mode using top 1/2 of throttle stick travel
+    //0-（throttle_max - throttle_cruise）：使用油门杆行程的1/2进行自动模式下的油门微推
     int16_t     throttle_nudge;
 
     // receiver RSSI
@@ -258,7 +259,7 @@ private:
     // the time when the last HEARTBEAT message arrived from a GCS
     uint32_t last_heartbeat_ms;
 
-    // obstacle detection information
+    // obstacle detection information  障碍物检测信息
     struct {
         // have we detected an obstacle?
         uint8_t detected_count;

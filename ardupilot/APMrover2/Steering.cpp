@@ -190,6 +190,7 @@ void Rover::calc_lateral_acceleration() {
 
 /*
     calculate steering angle given lateral_acceleration
+    计算给定横向加速度的转向角
 */
 void Rover::calc_nav_steer() {
     // check to see if the rover is loitering
@@ -198,13 +199,25 @@ void Rover::calc_nav_steer() {
         return;
     }
 
-    // add in obstacle avoidance
+    // add in obstacle avoidance 添加障碍物避免
     lateral_acceleration += (obstacle.turn_angle/45.0f) * g.turn_max_g;
 
-    // constrain to max G force
+    // constrain to max G force  约束到最大G力
     lateral_acceleration = constrain_float(lateral_acceleration, -g.turn_max_g*GRAVITY_MSS, g.turn_max_g*GRAVITY_MSS);
 
-    channel_steer->servo_out = steerController.get_steering_out_lat_accel(lateral_acceleration);
+    /*
+      return a steering servo output from -4500 to 4500 given a
+      desired lateral acceleration rate in m/s/s. Positive lateral
+      acceleration is to the right.
+      返回转向伺服输出从-4500到4500，
+      给定所需横向加速度（m / s / s）。 正侧面加速是在右边。
+
+  	  steering rate controller. Returns servo out -4500 to 4500 given
+  	  desired yaw rate in degrees/sec. Positive yaw rate means clockwise yaw.
+  	  转向率控制器: 返回伺服输出-4500到4500
+   	  所需偏航率以度/秒为单位。 顺时针偏航表示正偏航率。
+     */
+    channel_steer->servo_out = steerController.get_steering_out_lat_accel(lateral_acceleration);  //libraries/APM_Control/AP_SteerController.cpp
 }
 
 /*****************************************

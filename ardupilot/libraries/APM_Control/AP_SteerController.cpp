@@ -91,6 +91,8 @@ const AP_Param::GroupInfo AP_SteerController::var_info[] = {
 /*
   steering rate controller. Returns servo out -4500 to 4500 given
   desired yaw rate in degrees/sec. Positive yaw rate means clockwise yaw.
+  转向率控制器: 返回伺服输出-4500到4500
+  所需偏航率以度/秒为单位。 顺时针偏航表示正偏航率。
 */
 int32_t AP_SteerController::get_steering_out_rate(float desired_rate)
 {
@@ -109,6 +111,8 @@ int32_t AP_SteerController::get_steering_out_rate(float desired_rate)
 
     // this is a linear approximation of the inverse steering
     // equation for a ground vehicle. It returns steering as an angle from -45 to 45
+    //这是逆向转向的线性近似
+    //地面车辆方程式 它将转向角度从-45到45
     float scaler = 1.0f / speed;
 
     _pid_info.desired = desired_rate;
@@ -118,6 +122,8 @@ int32_t AP_SteerController::get_steering_out_rate(float desired_rate)
 	
 	// Calculate equivalent gains so that values for K_P and K_I can be taken across from the old PID law
     // No conversion is required for K_D
+	//计算等效增益，使K_P和K_I的值可以从旧的PID法中得出
+	// K_D不需要转换
 	float ki_rate = _K_I * _tau * 45.0f;
 	float kp_ff = MAX((_K_P - _K_I * _tau) * _tau  - _K_D , 0) * 45.0f;
 	float k_ff = _K_FF * 45.0f;
@@ -152,10 +158,10 @@ int32_t AP_SteerController::get_steering_out_rate(float desired_rate)
     _pid_info.P = (ToRad(desired_rate) * kp_ff) * scaler;
     _pid_info.FF = (ToRad(desired_rate) * k_ff) * scaler;
 	
-	// Calculate the demanded control surface deflection
+	// Calculate the demanded control surface deflection  计算要求的控制面偏转
 	_last_out = _pid_info.D + _pid_info.FF + _pid_info.P + _pid_info.I;
 	
-	// Convert to centi-degrees and constrain
+	// Convert to centi-degrees and constrain  转换为厘米度并约束
 	return constrain_float(_last_out * 100, -4500, 4500);
 }
 
@@ -163,6 +169,8 @@ int32_t AP_SteerController::get_steering_out_rate(float desired_rate)
 /*
   lateral acceleration controller. Returns servo value -4500 to 4500
   given a desired lateral acceleration
+  返回转向伺服输出从-4500到4500，
+  给定所需横向加速度（m / s / s）。 正侧面加速是在右边。
 */
 int32_t AP_SteerController::get_steering_out_lat_accel(float desired_accel)
 {
@@ -172,7 +180,7 @@ int32_t AP_SteerController::get_steering_out_lat_accel(float desired_accel)
         speed = _minspeed;
     }
 
-	// Calculate the desired steering rate given desired_accel and speed
+	// Calculate the desired steering rate given desired_accel and speed    给定期望加速度和速度计算所需的转向率
     float desired_rate = ToDeg(desired_accel / speed);
     return get_steering_out_rate(desired_rate);
 }

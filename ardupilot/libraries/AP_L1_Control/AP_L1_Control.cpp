@@ -16,18 +16,20 @@ const AP_Param::GroupInfo AP_L1_Control::var_info[] = {
     AP_GROUPINFO("PERIOD",    0, AP_L1_Control, _L1_period, 20),
 	
     // @Param: DAMPING
-    // @DisplayName: L1 control damping ratio
+    // @DisplayName: L1 control
     // @Description: Damping ratio for L1 control. Increase this in increments of 0.05 if you are getting overshoot in path tracking. You should not need a value below 0.7 or above 0.85.
-	// @Range: 0.6 1.0
+    //L1控制阻尼比。 如果您在路径跟踪中超调，则以0.05为增量增加。 您不应该需要低于0.7或高于0.85的值。
+    // @Range: 0.6 1.0
 	// @Increment: 0.05
-    AP_GROUPINFO("DAMPING",   1, AP_L1_Control, _L1_damping, 0.75f),
+    AP_GROUPINFO("DAMPING",   1, AP_L1_Control, _L1_damping, 0.75f),   //阻尼比
 
     // @Param: XTRACK_I
     // @DisplayName: L1 control crosstrack integrator gain
     // @Description: Crosstrack error integrator gain. This gain is applied to the crosstrack error to ensure it converges to zero. Set to zero to disable. Smaller values converge slower, higher values will cause crosstrack error oscillation.
+    //串扰误差积分器增益。 该增益应用于交叉错误，以确保其收敛到零。 设置为零以禁用。 较小的值收敛较慢，较高的值将导致交叉错误振荡。
     // @Range: 0 0.1
     // @Increment: 0.01
-    AP_GROUPINFO("XTRACK_I",   2, AP_L1_Control, _L1_xtrack_i_gain, 0.02),
+    AP_GROUPINFO("XTRACK_I",   2, AP_L1_Control, _L1_xtrack_i_gain, 0.02),  //交叉积分器增益
 
     AP_GROUPEND
 };
@@ -40,6 +42,11 @@ const AP_Param::GroupInfo AP_L1_Control::var_info[] = {
 //Modified to enable period and damping of guidance loop to be set explicitly
 //Modified to provide explicit control over capture angle
 
+//基于飞机速度矢量与参考矢量到路径之间的角度的岸角命令。
+
+//修改为使用PD控制进行圆跟踪，使loiter半径小于L1长度
+//修改为使引导循环的周期和阻尼明确设置
+//修改为提供对捕获角度的显式控制
 
 /*
   return the bank angle needed to achieve tracking from the last
@@ -79,6 +86,7 @@ int32_t AP_L1_Control::target_bearing_cd(void) const
 
 /*
   this is the turn distance assuming a 90 degree turn
+  假设90度转弯的转弯距离
  */
 float AP_L1_Control::turn_distance(float wp_radius) const
 {
@@ -93,6 +101,12 @@ float AP_L1_Control::turn_distance(float wp_radius) const
   This function allows straight ahead mission legs to avoid thinking
   they have reached the waypoint early, which makes things like camera
   trigger and ball drop at exact positions under mission control much easier
+  这近似于给定转角的转弯距离。 如果
+   turn_angle> 90，则使用90度转距，否则使用
+   转距离线性减小。
+   这个功能可以让前方的任务腿避免思考
+   他们早点到达了航点，这使得像相机这样的东西
+   触发和球落在任务控制下的确切位置更容易
  */
 float AP_L1_Control::turn_distance(float wp_radius, float turn_angle) const
 {
@@ -118,6 +132,7 @@ float AP_L1_Control::crosstrack_error(void) const
    prevent indecision in our turning by using our previous turn
    decision if we are in a narrow angle band pointing away from the
    target and the turn angle has changed sign
+   如果我们处于远离目标的狭窄角度角度，并且转角已经改变了标志，则可以通过使用我们以前的转弯决策来防止我们的转弯犹豫不决
  */
 void AP_L1_Control::_prevent_indecision(float &Nu)
 {
@@ -150,33 +165,37 @@ void AP_L1_Control::update_waypoint(const struct Location &prev_WP, const struct
     }
     _last_update_waypoint_us = now;
     
-	// Calculate L1 gain required for specified damping
+	// Calculate L1 gain required for specified damping 计算指定阻尼所需的L1增益
 	float K_L1 = 4.0f * _L1_damping * _L1_damping;
 
 	// Get current position and velocity
     _ahrs.get_position(_current_loc);
 
-	Vector2f _groundspeed_vector = _ahrs.groundspeed_vector();
+	Vector2f _groundspeed_vector = _ahrs.groundspeed_vector();  // 以m/s返回地面速度估计值
 
 	// update _target_bearing_cd
 	_target_bearing_cd = get_bearing_cd(_current_loc, next_WP);
 	
-	//Calculate groundspeed
+	//Calculate groundspeed  //速度
 	float groundSpeed = _groundspeed_vector.length();
     if (groundSpeed < 0.1f) {
         // use a small ground speed vector in the right direction,
         // allowing us to use the compass heading at zero GPS velocity
+    	//在正确的方向上使用小的地面速度矢量，
+    	//允许我们以GPS速度为0时，使用指南针
         groundSpeed = 0.1f;
         _groundspeed_vector = Vector2f(cosf(_ahrs.yaw), sinf(_ahrs.yaw)) * groundSpeed;
     }
 
 	// Calculate time varying control parameters
 	// Calculate the L1 length required for specified period
+    //计算时变控制参数
+    //计算指定期间所需的L1长度
 	// 0.3183099 = 1/1/pipi
 	_L1_dist = 0.3183099f * _L1_damping * _L1_period * groundSpeed;
 	
 	// Calculate the NE position of WP B relative to WP A
-    Vector2f AB = location_diff(prev_WP, next_WP);
+    Vector2f AB = location_diff(prev_WP, next_WP);  ////返回北/东平面中以米为单位的距离，作为从loc1到loc2的N / E向量
     float AB_length = AB.length();
     
 	// Check for AB zero length and track directly to the destination
@@ -193,6 +212,7 @@ void AP_L1_Control::update_waypoint(const struct Location &prev_WP, const struct
     Vector2f A_air = location_diff(prev_WP, _current_loc);
 
 	// calculate distance to target track, for reporting
+    //计算到目标轨道的距离，用于报告
 	_crosstrack_error = A_air % AB;
 
 	//Determine if the aircraft is behind a +-135 degree degree arc centred on WP A

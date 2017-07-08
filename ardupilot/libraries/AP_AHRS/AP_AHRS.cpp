@@ -177,6 +177,8 @@ void AP_AHRS::add_trim(float roll_in_radians, float pitch_in_radians, bool save_
 Vector2f AP_AHRS::groundspeed_vector(void)
 {
     // Generate estimate of ground speed vector using air data system
+	//使用空气数据系统生成地面速度矢量的估计
+
     Vector2f gndVelADS;
     Vector2f gndVelGPS;
     float airspeed;

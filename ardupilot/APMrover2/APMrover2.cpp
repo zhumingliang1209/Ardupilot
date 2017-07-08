@@ -446,8 +446,8 @@ void Rover::update_current_mode(void)
         lateral_acceleration = max_g_force * (channel_steer->pwm_to_angle()/4500.0f);
         calc_nav_steer();
 
-        // and throttle gives speed in proportion to cruise speed, up
-        // to 50% throttle, then uses nudging above that.
+        // and throttle gives speed in proportion to cruise speed, up 油门速度与巡航速度成正比
+        // to 50% throttle, then uses nudging above that.  到50％油门，然后使用微调。
         float target_speed = channel_throttle->pwm_to_angle() * 0.01f * 2 * g.speed_cruise;
         set_reverse(target_speed < 0);
         if (in_reverse) {
