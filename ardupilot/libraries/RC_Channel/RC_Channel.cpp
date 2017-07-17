@@ -228,6 +228,7 @@ RC_Channel::control_mix(float value)
 }
 
 // returns just the PWM without the offset from radio_min
+//偏移量
 void
 RC_Channel::calc_pwm(void)
 {
@@ -485,7 +486,7 @@ RC_Channel::norm_output()
 
 void RC_Channel::output() const
 {
-    hal.rcout->write(_ch_out, radio_out);
+    hal.rcout->write(_ch_out, radio_out);  //PWM 输出接口，AP_HAL_PX4/RCOutput.cpp
 }
 
 void RC_Channel::output_trim() const
@@ -509,7 +510,7 @@ void RC_Channel::setup_failsafe_trim_all()
 {
     for (uint8_t i=0; i<RC_MAX_CHANNELS; i++) {
         if (rc_ch[i] != NULL) {
-            hal.rcout->set_failsafe_pwm(1U<<i, rc_ch[i]->radio_trim);
+            hal.rcout->set_failsafe_pwm(1U<<i, rc_ch[i]->radio_trim);   //AP_HAL_PX4/RCOutput.cpp
         }
     }
 }

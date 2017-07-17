@@ -1467,7 +1467,7 @@ PX4FMU::write(file *filp, const char *buffer, size_t len)
 
 	for (uint8_t i = 0; i < count; i++) {
 		if (values[i] != PWM_IGNORE_THIS_CHANNEL) {
-			up_pwm_servo_set(i, values[i]);
+			up_pwm_servo_set(i, values[i]);   //PX4 Mixer  modules/PX4Firmware/src/drivers/stm32/drv_pwm_servo.c
 		}
 	}
 

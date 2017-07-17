@@ -222,6 +222,7 @@ void Rover::calc_nav_steer() {
 
 /*****************************************
     Set the flight control servos based on the current calculated values
+    根据当前的计算值设置飞行控制舵机
 *****************************************/
 void Rover::set_servos(void) {
     static int16_t last_throttle;

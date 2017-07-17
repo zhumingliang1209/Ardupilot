@@ -1118,7 +1118,8 @@ bool AP_Mission::advance_current_nav_cmd()
         return false;
     }
 
-    // exit immediately if current nav command has not completed
+    // exit immediately if current nav command has not completed  当前导航命令尚未完成时立即退出
+
     if (_flags.nav_cmd_loaded) {
         return false;
     }
@@ -1142,6 +1143,7 @@ bool AP_Mission::advance_current_nav_cmd()
     uint8_t max_loops = 255;
 
     // search until we find next nav command or reach end of command list
+    //搜索，直到找到下一个导航命令或到达命令列表结束
     while (!_flags.nav_cmd_loaded) {
         // get next command
         if (!get_next_cmd(cmd_index, cmd, true)) {

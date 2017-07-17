@@ -45,24 +45,24 @@ Rover rover;
   time they are expected to take (in microseconds)
 */
 const AP_Scheduler::Task Rover::scheduler_tasks[] = {
-    SCHED_TASK(read_radio,             50,   1000),
-    SCHED_TASK(ahrs_update,            50,   6400),
-    SCHED_TASK(read_sonars,            50,   2000),
-    SCHED_TASK(update_current_mode,    50,   1500),
-    SCHED_TASK(set_servos,             50,   1500),
+    SCHED_TASK(read_radio,             50,   1000),  //遥控器
+    SCHED_TASK(ahrs_update,            50,   6400),  //AHRS
+    SCHED_TASK(read_sonars,            50,   2000),  //sonar
+    SCHED_TASK(update_current_mode,    50,   1500),  //更新模式
+    SCHED_TASK(set_servos,             50,   1500),  //舵机输出
     SCHED_TASK(update_GPS_50Hz,        50,   2500),
     SCHED_TASK(update_GPS_10Hz,        10,   2500),
     SCHED_TASK(update_alt,             10,   3400),
-    SCHED_TASK(navigate,               10,   1600),
+    SCHED_TASK(navigate,               10,   1600),  //导航模式
     SCHED_TASK(update_compass,         10,   2000),
-    SCHED_TASK(update_commands,        10,   1000),
+    SCHED_TASK(update_commands,        10,   1000),  //Mission Mode updata
     SCHED_TASK(update_logging1,        10,   1000),
     SCHED_TASK(update_logging2,        10,   1000),
     SCHED_TASK(gcs_retry_deferred,     50,   1000),
     SCHED_TASK(gcs_update,             50,   1700),
     SCHED_TASK(gcs_data_stream_send,   50,   3000),
     SCHED_TASK(read_control_switch,     7,   1000),
-    SCHED_TASK(read_trim_switch,       10,   1000),
+    SCHED_TASK(read_trim_switch,       10,   1000),   //遥控器通道模式切换
     SCHED_TASK(read_battery,           10,   1000),
     SCHED_TASK(read_receiver_rssi,     10,   1000),
     SCHED_TASK(update_events,          50,   1000),

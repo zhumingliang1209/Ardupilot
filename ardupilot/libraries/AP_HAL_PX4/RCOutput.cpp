@@ -2,7 +2,7 @@
 
 #include <AP_HAL/AP_HAL.h>
 
-#if CONFIG_HAL_BOARD == HAL_BOARD_PX4
+#if 1//CONFIG_HAL_BOARD == HAL_BOARD_PX4
 #include "RCOutput.h"
 
 #include <sys/types.h>
@@ -21,7 +21,7 @@ using namespace PX4;
 void PX4RCOutput::init()
 {
     _perf_rcout = perf_alloc(PC_ELAPSED, "APM_rcout");
-    _pwm_fd = open(PWM_OUTPUT0_DEVICE_PATH, O_RDWR);
+    _pwm_fd = open(PWM_OUTPUT0_DEVICE_PATH, O_RDWR);  //  /dev/pwm_output0
     if (_pwm_fd == -1) {
         AP_HAL::panic("Unable to open " PWM_OUTPUT0_DEVICE_PATH);
     }
@@ -206,6 +206,8 @@ void PX4RCOutput::set_safety_pwm(uint32_t chmask, uint16_t period_us)
         }
         pwm_values.channel_count++;
     }
+
+    //modules/PX4Firmware/src/drivers/px4fmu/fmu.cpp +1086
     int ret = ioctl(_pwm_fd, PWM_SERVO_SET_DISARMED_PWM, (long unsigned int)&pwm_values);
     if (ret != OK) {
         hal.console->printf("Failed to setup disarmed PWM for 0x%08x to %u\n", (unsigned)chmask, period_us);
@@ -222,6 +224,8 @@ void PX4RCOutput::set_failsafe_pwm(uint32_t chmask, uint16_t period_us)
         }
         pwm_values.channel_count++;
     }
+
+    //modules/PX4Firmware/src/drivers/px4fmu/fmu.cpp +1086
     int ret = ioctl(_pwm_fd, PWM_SERVO_SET_FAILSAFE_PWM, (long unsigned int)&pwm_values);
     if (ret != OK) {
         hal.console->printf("Failed to setup failsafe PWM for 0x%08x to %u\n", (unsigned)chmask, period_us);
@@ -369,7 +373,7 @@ void PX4RCOutput::_publish_actuators(void)
     }
 }
 
-void PX4RCOutput::_timer_tick(void)
+void PX4RCOutput::_timer_tick(void)   //时间片轮询
 {
     uint32_t now = AP_HAL::micros();
 
@@ -400,7 +404,8 @@ void PX4RCOutput::_timer_tick(void)
         _need_update = false;
         perf_begin(_perf_rcout);
         // always send all outputs to first PWM device. This ensures that SBUS is properly updated in px4io
-        ::write(_pwm_fd, _period, _max_channel*sizeof(_period[0]));
+        //始终将所有输出发送到第一个PWM器件。 这样可以确保SBUS在px4io中正确更新
+        ::write(_pwm_fd, _period, _max_channel*sizeof(_period[0]));  //(不确定)modules/PX4Firmware/src/drivers/px4fmu/fmu.cpp
         if (_max_channel > _servo_count) {
             // maybe send updates to alt_fd
             if (_alt_fd != -1 && _alt_servo_count > 0) {

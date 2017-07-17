@@ -32,7 +32,7 @@ void Rover::init_rc_in()
 	channel_throttle->set_default_dead_zone(30);
 
 	//set auxiliary ranges
-    update_aux();
+    update_aux();   //enable_aux_servos
 }
 
 void Rover::init_rc_out()
@@ -47,7 +47,7 @@ void Rover::init_rc_out()
     RC_Channel::output_trim_all();    
 
     // setup PWM values to send if the FMU firmware dies
-    RC_Channel::setup_failsafe_trim_all();  
+    RC_Channel::setup_failsafe_trim_all();   //设置失效保护  RC_Channel/RC_Channel.cpp
 
     // output throttle trim when safety off if arming
     // is setup for min on disarm.  MIN is from plane where MIN is effectively no throttle.
