@@ -48,14 +48,14 @@ const AP_Scheduler::Task Rover::scheduler_tasks[] = {
     SCHED_TASK(read_radio,             50,   1000),  //遥控器
     SCHED_TASK(ahrs_update,            50,   6400),  //AHRS
     SCHED_TASK(read_sonars,            50,   2000),  //sonar
-    SCHED_TASK(update_current_mode,    50,   1500),  //更新模式
+    SCHED_TASK(update_current_mode,    50,   1500),  //模式切换：更新模式执行L1算法,控制油门
     SCHED_TASK(set_servos,             50,   1500),  //舵机输出
-    SCHED_TASK(update_GPS_50Hz,        50,   2500),
-    SCHED_TASK(update_GPS_10Hz,        10,   2500),
+    SCHED_TASK(update_GPS_50Hz,        50,   2500),  //解析GPS数据
+    SCHED_TASK(update_GPS_10Hz,        10,   2500),  //GPS定位后数据使用
     SCHED_TASK(update_alt,             10,   3400),
-    SCHED_TASK(navigate,               10,   1600),  //导航模式
+    SCHED_TASK(navigate,               10,   1600),  //自动模式（Auto  RTL）： 主要更新航点 其他模式同update_current_mode ，没有油门控制
     SCHED_TASK(update_compass,         10,   2000),
-    SCHED_TASK(update_commands,        10,   1000),  //Mission Mode updata
+    SCHED_TASK(update_commands,        10,   1000),  //Mission Mode updata 只更新航点
     SCHED_TASK(update_logging1,        10,   1000),
     SCHED_TASK(update_logging2,        10,   1000),
     SCHED_TASK(gcs_retry_deferred,     50,   1000),
@@ -402,7 +402,7 @@ void Rover::update_GPS_10Hz(void)
     }
 }
 
-void Rover::update_current_mode(void)
+void Rover::update_current_mode(void)   //更新航行模式    AUTO模式 执行 L1 算法
 {
     switch (control_mode){
     case AUTO:
@@ -498,7 +498,7 @@ void Rover::update_navigation()
         break;
 
     case AUTO:
-        mission.update();
+        mission.update();  //主要更新航点
         break;
 
     case RTL:

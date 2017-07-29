@@ -195,7 +195,7 @@ void AP_L1_Control::update_waypoint(const struct Location &prev_WP, const struct
 	_L1_dist = 0.3183099f * _L1_damping * _L1_period * groundSpeed;
 	
 	// Calculate the NE position of WP B relative to WP A
-    Vector2f AB = location_diff(prev_WP, next_WP);  ////返回北/东平面中以米为单位的距离，作为从loc1到loc2的N / E向量
+    Vector2f AB = location_diff(prev_WP, next_WP);  ////计算A、B向量，返回北/东平面中以米为单位的距离，作为从loc1到loc2的N/E向量
     float AB_length = AB.length();
     
 	// Check for AB zero length and track directly to the destination
@@ -206,7 +206,7 @@ void AP_L1_Control::update_waypoint(const struct Location &prev_WP, const struct
             AB = Vector2f(cosf(_ahrs.yaw), sinf(_ahrs.yaw));
         }
 	}
-	AB.normalize();
+	AB.normalize();  //归一化
 
 	// Calculate the NE position of the aircraft relative to WP A
     Vector2f A_air = location_diff(prev_WP, _current_loc);
@@ -219,7 +219,7 @@ void AP_L1_Control::update_waypoint(const struct Location &prev_WP, const struct
 	//and further than L1 distance from WP A. Then use WP A as the L1 reference point
 		//Otherwise do normal L1 guidance
 	float WP_A_dist = A_air.length();
-	float alongTrackDist = A_air * AB;
+	float alongTrackDist = A_air * AB; /*计算船位置在直线AB上的投影长度   向量a×向量b=m×p+n×q（横坐标与纵坐标的乘机之和）*/
 	if (WP_A_dist > _L1_dist && alongTrackDist/MAX(WP_A_dist, 1.0f) < -0.7071f) 
     {
 		//Calc Nu to fly To WP A

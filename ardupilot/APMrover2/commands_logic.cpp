@@ -189,6 +189,7 @@ void Rover::do_nav_wp(const AP_Mission::Mission_Command& cmd)
     loiter_time_max = abs(cmd.p1);
 
     // this is the distance we travel past the waypoint - not there yet so 0 initially
+    //这是我们经过航点的距离 - 最初还没有0
     distance_past_wp = 0;
 
 	set_next_WP(cmd.content.location);

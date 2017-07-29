@@ -86,6 +86,7 @@ public:
     float load_average(uint32_t tick_time_usec) const;
 
     // get the configured main loop rate
+    //获得配置的主循环速率
     uint16_t get_loop_rate_hz(void) const {
         return _loop_rate_hz;
     }

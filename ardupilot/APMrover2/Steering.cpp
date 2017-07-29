@@ -161,7 +161,7 @@ void Rover::calc_throttle(float target_speed) {
 void Rover::calc_lateral_acceleration() {
     switch (control_mode) {
     case AUTO:
-        nav_controller->update_waypoint(prev_WP, next_WP);
+        nav_controller->update_waypoint(prev_WP, next_WP);  //AP_L1_Control
         break;
 
     case RTL:

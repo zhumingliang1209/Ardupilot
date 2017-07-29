@@ -66,7 +66,7 @@ AP_Scheduler::AP_Scheduler(void)
 #endif
     AP_Param::setup_object_defaults(this, var_info);
 
-    // only allow 50 to 400 Hz
+    // only allow 50 to 400 Hz  //线程调用频率50 to 400 Hz
     if (_loop_rate_hz < 50) {
         _loop_rate_hz.set(50);
     } else if (_loop_rate_hz > 400) {
@@ -84,7 +84,7 @@ void AP_Scheduler::init(const AP_Scheduler::Task *tasks, uint8_t num_tasks)
     _tick_counter = 0;
 }
 
-// one tick has passed
+// one tick has passed   //一个tick
 void AP_Scheduler::tick(void)
 {
     _tick_counter++;
@@ -93,6 +93,7 @@ void AP_Scheduler::tick(void)
 /*
   run one tick
   this will run as many scheduler tasks as we can in the specified time
+  在指定的时间内运行尽可能多的调度程序任务
  */
 void AP_Scheduler::run(uint16_t time_available)
 {
@@ -100,17 +101,17 @@ void AP_Scheduler::run(uint16_t time_available)
     uint32_t now = run_started_usec;
 
     for (uint8_t i=0; i<_num_tasks; i++) {
-        uint16_t dt = _tick_counter - _last_run[i];
-        uint16_t interval_ticks = _loop_rate_hz / _tasks[i].rate_hz;
+        uint16_t dt = _tick_counter - _last_run[i];  //一个线程运行一次的时间长度  单位tick
+        uint16_t interval_ticks = _loop_rate_hz / _tasks[i].rate_hz;  //_loop_rate_hz 整体调度率以Hz为单位
         if (interval_ticks < 1) {
             interval_ticks = 1;
         }
         if (dt >= interval_ticks) {
             // this task is due to run. Do we have enough time to run it?
-            _task_time_allowed = _tasks[i].max_time_micros;
+            _task_time_allowed = _tasks[i].max_time_micros;  //一个线程最大可允许运行时间
 
             if (dt >= interval_ticks*2) {
-                // we've slipped a whole run of this task!
+                // we've slipped a whole run of this task!//完成整个线程
                 if (_debug > 1) {
                     hal.console->printf("Scheduler slip task[%u-%s] (%u/%u/%u)\n",
                                           (unsigned)i,
@@ -121,7 +122,7 @@ void AP_Scheduler::run(uint16_t time_available)
                 }
             }
 
-            if (_task_time_allowed <= time_available) {
+            if (_task_time_allowed <= time_available) {  //可执行线程运行
                 // run it
                 _task_time_started = now;
                 current_task = i;
@@ -133,11 +134,11 @@ void AP_Scheduler::run(uint16_t time_available)
                 _last_run[i] = _tick_counter;
 
                 // work out how long the event actually took
-                now = AP_HAL::micros();
+                now = AP_HAL::micros();  //确定一个线程实际所用多长时间
                 uint32_t time_taken = now - _task_time_started;
 
                 if (time_taken > _task_time_allowed) {
-                    // the event overran!
+                    // the event overran!  事件超时
                     if (_debug > 2) {
                         hal.console->printf("Scheduler overrun task[%u-%s] (%u/%u)\n",
                                               (unsigned)i,
@@ -149,7 +150,7 @@ void AP_Scheduler::run(uint16_t time_available)
                 if (time_taken >= time_available) {
                     goto update_spare_ticks;
                 }
-                time_available -= time_taken;
+                time_available -= time_taken;  //总时间减去所用时间
             }
         }
     }
